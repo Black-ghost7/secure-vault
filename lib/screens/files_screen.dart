@@ -198,6 +198,31 @@ class _FilesScreenState extends State<FilesScreen> {
     );
   }
 
+  Future<void> _saveAs() async {
+    if (_outputs.isEmpty) return;
+    final ar = Localizations.localeOf(context).languageCode == 'ar';
+    var saved = 0;
+    for (final p in _outputs) {
+      try {
+        final name = p.split('/').last;
+        final bytes = await File(p).readAsBytes();
+        final dest = await FilePicker.saveFile(
+          dialogTitle: ar ? 'اختر مكان الحفظ' : 'Choose where to save',
+          fileName: name,
+          bytes: bytes,
+        );
+        if (dest != null) saved++;
+      } catch (_) {}
+    }
+    if (!mounted) return;
+    showMsg(
+      context,
+      saved > 0
+          ? (ar ? 'تم الحفظ' : 'Saved')
+          : (ar ? 'لم يتم الحفظ' : 'Not saved'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -279,10 +304,25 @@ class _FilesScreenState extends State<FilesScreen> {
         if (_outputs.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: FilledButton.icon(
-              onPressed: _share,
-              icon: const Icon(Icons.ios_share),
-              label: Text(s.t('share_results')),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FilledButton.icon(
+                  onPressed: _saveAs,
+                  icon: const Icon(Icons.save_alt),
+                  label: Text(
+                    Localizations.localeOf(context).languageCode == 'ar'
+                        ? 'حفظ في مجلد أختاره'
+                        : 'Save to a folder',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: _share,
+                  icon: const Icon(Icons.ios_share),
+                  label: Text(s.t('share_results')),
+                ),
+              ],
             ),
           ),
         const SizedBox(height: 16),
