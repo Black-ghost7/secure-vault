@@ -20,7 +20,16 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: flutter build apk --release
-      - run: cp build/app/outputs/flutter-apk/app-release.apk secure-vault.apk
+      - name: Sign APK
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > ks.jks
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | sort -V | tail -1)
+          $APKSIGNER sign --ks ks.jks --ks-key-alias ghost --ks-pass env:KS_PASS --key-pass env:KS_PASS --out secure-vault.apk build/app/outputs/flutter-apk/app-release.apk
+          $APKSIGNER verify --print-certs secure-vault.apk
+          rm ks.jks
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
