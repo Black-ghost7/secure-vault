@@ -63,3 +63,7 @@ This is a personal project and its code has not been audited by a security profe
 ## Author
 
 Built by [Black-ghost7](https://github.com/Black-ghost7).
+
+## License
+
+Released under the [MIT License](LICENSE).
